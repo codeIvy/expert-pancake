@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>WhatsApp</title>
+<title>WhatsApp — Netrunner Handout</title>
 <style>
+  /* ── Shared tokens ─────────────────────────────────────── */
   :root {
     --chat-bg: #0b141a;
     --header-bg: #1f2c33;
@@ -22,44 +23,76 @@
     --user-ada: #e0bbff;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; background: #000; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; color: var(--text-primary); overflow: hidden; -webkit-font-smoothing: antialiased; }
-  body { display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, #1a1a1a 0%, #000 100%); }
-  .device {
+  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+
+  /* ── View mode layout ──────────────────────────────────── */
+  body.view-mode {
+    background: radial-gradient(ellipse at center, #1a1a1a 0%, #000 100%);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  body.view-mode .device {
     width: 100%; height: 100%;
-    background: var(--chat-bg); position: relative; display: flex; flex-direction: column;
-    overflow: hidden;
+    background: var(--chat-bg); display: flex; flex-direction: column; overflow: hidden;
   }
   @media (min-width: 500px) {
-    body { background: #0a0b0d; padding: 20px; }
-    .device {
-      width: 390px;
-      height: 844px;
-      max-height: 95vh;
-      border-radius: 44px;
-      border: 10px solid #1a1c1f;
+    body.view-mode { background: #0a0b0d; padding: 20px; }
+    body.view-mode .device {
+      width: 390px; height: 844px; max-height: 95vh;
+      border-radius: 44px; border: 10px solid #1a1c1f;
       box-shadow: 0 30px 80px rgba(0,0,0,0.7), inset 0 0 0 1px #2a2c30;
     }
-    .device::before {
-      content: "";
-      position: absolute;
-      top: 12px; left: 50%;
-      transform: translateX(-50%);
-      width: 110px; height: 32px;
-      background: #0a0b0d;
-      border-radius: 20px;
-      z-index: 100;
+    body.view-mode .device::before {
+      content: ""; position: absolute; top: 12px; left: 50%;
+      transform: translateX(-50%); width: 110px; height: 32px;
+      background: #0a0b0d; border-radius: 20px; z-index: 100;
     }
   }
   @media (max-width: 499px) {
-    body { background: var(--chat-bg); }
-    .device { max-width: 100%; max-height: 100%; border-radius: 0; box-shadow: none; }
+    body.view-mode { background: var(--chat-bg); }
+    body.view-mode .device { max-width: 100%; max-height: 100%; border-radius: 0; box-shadow: none; }
   }
+  body.view-mode .edit-panel { display: none; }
+
+  /* ── Edit mode layout ──────────────────────────────────── */
+  body.edit-mode {
+    background: #0a0f14;
+    display: flex; flex-direction: row; height: 100%; overflow: hidden;
+  }
+  body.edit-mode .edit-panel {
+    flex: 1; overflow-y: auto; padding: 20px;
+    background: #111820; border-right: 1px solid #2a3540;
+    color: #cdd6de; min-width: 300px; max-width: 560px;
+  }
+  body.edit-mode .device-wrapper {
+    display: flex; align-items: center; justify-content: center;
+    background: #0a0b0d; padding: 20px; flex-shrink: 0;
+  }
+  body.edit-mode .device {
+    background: var(--chat-bg); position: relative;
+    width: 320px; height: 693px;
+    border-radius: 36px; border: 8px solid #1a1c1f;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), inset 0 0 0 1px #2a2c30;
+    display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0;
+  }
+  body.edit-mode .device::before {
+    content: ""; position: absolute; top: 10px; left: 50%;
+    transform: translateX(-50%); width: 88px; height: 26px;
+    background: #0a0b0d; border-radius: 16px; z-index: 100;
+  }
+  @media (max-width: 900px) {
+    body.edit-mode { flex-direction: column; overflow-y: auto; height: auto; min-height: 100%; }
+    body.edit-mode .edit-panel { max-width: 100%; border-right: none; border-bottom: 1px solid #2a3540; }
+    body.edit-mode .device-wrapper { padding: 16px; }
+  }
+
+  /* ── Phone internals (shared) ──────────────────────────── */
+  .device { position: relative; }
   .statusbar {
     height: 50px; padding: 18px 28px 0;
     display: flex; justify-content: space-between; align-items: center;
-    font-size: 15px; font-weight: 600; letter-spacing: 0.2px;
-    flex-shrink: 0; z-index: 50;
+    font-size: 15px; font-weight: 600; letter-spacing: 0.2px; flex-shrink: 0; z-index: 50;
   }
+  body.edit-mode .statusbar { height: 40px; padding: 12px 22px 0; font-size: 12px; }
   .statusbar .right { display: flex; align-items: center; gap: 6px; }
   .signal { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
   .signal i { width: 3px; background: #fff; border-radius: 1px; }
@@ -67,30 +100,29 @@
   .signal i:nth-child(2) { height: 6px; }
   .signal i:nth-child(3) { height: 8px; opacity: 0.5; }
   .signal i:nth-child(4) { height: 10px; opacity: 0.3; }
-  .battery {
-    position: relative; width: 26px; height: 13px;
-    border: 1.2px solid #fff; border-radius: 3px; padding: 1.5px;
-  }
-  .battery::after {
-    content: ""; position: absolute; right: -3px; top: 3.5px;
-    width: 2px; height: 5px; background: #fff; border-radius: 0 1px 1px 0;
-  }
-  .battery .fill { height: 100%; width: 14%; background: #ff5252; border-radius: 1px; }
-  .chat-header { background: var(--header-bg); padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; border-bottom: 1px solid rgba(0, 0, 0, 0.2); }
-  .group-icon { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6a4c93, #ff595e); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .battery { position: relative; width: 26px; height: 13px; border: 1.2px solid #fff; border-radius: 3px; padding: 1.5px; }
+  .battery::after { content: ""; position: absolute; right: -3px; top: 3.5px; width: 2px; height: 5px; background: #fff; border-radius: 0 1px 1px 0; }
+  .battery .fill { height: 100%; background: #fff; border-radius: 1px; transition: width 0.2s; }
+  .chat-header { background: var(--header-bg); padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; border-bottom: 1px solid rgba(0,0,0,0.2); }
+  .group-icon { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6a4c93, #ff595e); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  body.edit-mode .group-icon { width: 30px; height: 30px; font-size: 13px; }
   .chat-info { flex: 1; min-width: 0; }
-  .chat-title { font-size: 16px; font-weight: 500; }
-  .chat-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .chat-title { font-size: 16px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body.edit-mode .chat-title { font-size: 12px; }
+  .chat-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body.edit-mode .chat-subtitle { font-size: 9px; }
   .messages { flex: 1; overflow-y: auto; padding: 8px 6px 12px; background-color: var(--chat-bg); }
   .messages::-webkit-scrollbar { width: 0; }
   .day-divider { display: flex; justify-content: center; margin: 12px 0 10px; }
   .day-divider span { background: var(--bubble-system); color: var(--text-secondary); font-size: 12px; padding: 4px 12px; border-radius: 8px; }
+  body.edit-mode .day-divider span { font-size: 9px; }
   .msg { display: flex; margin: 1px 8px; }
-  .msg.same-author { margin-top: 1px; margin-left: 16px; }
+  .msg.same-author { margin-top: 1px; }
   .msg:not(.same-author) { margin-top: 8px; }
   .bubble { background: var(--bubble-other); border-radius: 8px; padding: 6px 8px 6px 10px; max-width: 78%; position: relative; overflow: hidden; }
   .msg:not(.same-author) .bubble::before { content: ''; position: absolute; top: 0; left: -8px; width: 0; height: 0; border-style: solid; border-width: 0 8px 8px 0; border-color: transparent var(--bubble-other) transparent transparent; }
   .author-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  body.edit-mode .author-name { font-size: 10px; }
   .author-name.kamy { color: var(--user-kamy); }
   .author-name.tyler { color: var(--user-tyler); }
   .author-name.priya { color: var(--user-priya); }
@@ -98,110 +130,406 @@
   .author-name.maddie { color: var(--user-maddie); }
   .author-name.hartwell { color: var(--user-hartwell); }
   .author-name.ada { color: var(--user-ada); }
-  .msg-image { max-width: 100%; border-radius: 8px; margin-bottom: 6px; display: block; }
-  .msg-audio { max-width: 100%; margin: 6px 0; }
-  .msg-audio audio { width: 100%; height: 32px; }
+  .msg-img { max-width: 100%; border-radius: 8px; margin-bottom: 6px; display: block; }
   .msg-text { font-size: 14.5px; line-height: 1.32; color: var(--text-primary); word-wrap: break-word; padding-right: 50px; min-height: 18px; }
+  body.edit-mode .msg-text { font-size: 11px; }
   .time { position: absolute; bottom: 4px; right: 8px; font-size: 10.5px; color: var(--text-meta); }
-  .caps { font-weight: 600; }
+  body.edit-mode .time { font-size: 8px; }
   .input-bar { background: var(--header-bg); padding: 8px 10px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
   .input-pill { flex: 1; background: var(--bubble-other); border-radius: 24px; padding: 10px 14px; color: var(--text-meta); font-size: 14px; display: flex; align-items: center; gap: 10px; }
+  body.edit-mode .input-pill { padding: 7px 12px; font-size: 10px; }
   .send-btn { width: 42px; height: 42px; background: var(--bubble-other); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 18px; }
-  .home-indicator { display: flex; justify-content: center; padding-bottom: 8px; margin-top: 4px; z-index: 5; }
+  body.edit-mode .send-btn { width: 30px; height: 30px; font-size: 13px; }
+  .home-indicator { display: flex; justify-content: center; padding-bottom: 8px; margin-top: 4px; }
   .home-bar { width: 134px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.6); }
+  body.edit-mode .home-bar { width: 100px; height: 4px; }
+
+  /* ── Edit panel styles ─────────────────────────────────── */
+  .edit-panel h1 { font-size: 18px; font-weight: 600; color: #e9edef; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #2a3540; }
+  .section-title { font-size: 11px; font-weight: 700; color: #8696a0; text-transform: uppercase; letter-spacing: 0.9px; margin: 20px 0 10px; }
+  .field-row { margin-bottom: 10px; }
+  .field-row label { display: block; font-size: 12px; color: #8696a0; margin-bottom: 4px; }
+  .ep-input {
+    width: 100%; padding: 8px 10px; background: #1f2c33; border: 1px solid #2a3a44; border-radius: 6px;
+    color: #e9edef; font-size: 14px; outline: none; font-family: inherit;
+  }
+  .ep-input:focus { border-color: #00a884; box-shadow: 0 0 0 2px rgba(0,168,132,0.2); }
+  .row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Message list */
+  .msg-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .mi {
+    background: #182229; border: 1px solid #2a3540; border-radius: 8px;
+    padding: 10px 12px 10px 12px; position: relative;
+  }
+  .mi-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .mi-badge {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 2px 6px; border-radius: 4px; background: #2a3a44; color: #8696a0; flex-shrink: 0;
+  }
+  .mi-badge.is-divider { background: #1e3328; color: #6ab095; }
+  .mi-del {
+    position: absolute; top: 8px; right: 8px;
+    background: none; border: none; color: #667781; cursor: pointer; font-size: 15px; padding: 2px 5px; line-height: 1;
+  }
+  .mi-del:hover { color: #ff5252; }
+  .mi-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mi-fields .span2 { grid-column: 1 / -1; }
+  .mi-fields .fi label { display: block; font-size: 10px; color: #667781; margin-bottom: 3px; }
+  .mi-input {
+    width: 100%; padding: 6px 8px; background: #0b141a; border: 1px solid #2a3540; border-radius: 5px;
+    color: #e9edef; font-size: 12px; outline: none; font-family: inherit;
+  }
+  .mi-input:focus { border-color: #00a884; }
+  .mi-textarea { resize: vertical; min-height: 52px; }
+  .mi-check-row { display: flex; align-items: center; gap: 5px; margin-top: 6px; font-size: 11px; color: #8696a0; }
+  .mi-check-row input[type="checkbox"] { width: auto; accent-color: #00a884; }
+
+  .add-btns { display: flex; gap: 8px; margin-top: 4px; }
+  .btn { padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; font-family: inherit; transition: background 0.15s; }
+  .btn-green { background: #00a884; color: #fff; }
+  .btn-green:hover { background: #00c29b; }
+  .btn-ghost { background: #1f2c33; color: #8696a0; border: 1px solid #2a3540; }
+  .btn-ghost:hover { background: #2a3a44; color: #cdd6de; }
+
+  /* Share links */
+  .links-box { background: #182229; border: 1px solid #2a3540; border-radius: 8px; padding: 14px; }
+  .link-row { margin-bottom: 12px; }
+  .link-row:last-child { margin-bottom: 0; }
+  .link-label { font-size: 10px; font-weight: 700; color: #8696a0; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px; }
+  .link-input-row { display: flex; gap: 6px; }
+  .link-val {
+    flex: 1; padding: 7px 9px; background: #0b141a; border: 1px solid #2a3540; border-radius: 5px;
+    color: #aac; font-size: 11px; outline: none; font-family: monospace;
+  }
+  .copy-btn {
+    padding: 7px 12px; background: #1f2c33; border: 1px solid #2a3540; border-radius: 5px;
+    color: #8696a0; cursor: pointer; font-size: 12px; white-space: nowrap; font-family: inherit; transition: background 0.15s, color 0.15s;
+  }
+  .copy-btn:hover { background: #2a3a44; color: #cdd6de; }
+  .copy-btn.ok { background: #00a884; border-color: #00a884; color: #fff; }
+
+  .back-link { display: inline-flex; align-items: center; gap: 6px; color: #8696a0; text-decoration: none; font-size: 13px; margin-bottom: 16px; }
+  .back-link:hover { color: #cdd6de; }
 </style>
 </head>
 <body>
-<div class="device">
-  <div class="statusbar">
-    <span id="time">--:--</span>
-    <span class="right">
-      <span class="signal"><i></i><i></i><i></i><i></i></span>
-      <span style="font-size:11px;">SOS</span>
-      <span class="battery"><span class="fill" id="batteryFill"></span></span>
-    </span>
+
+<!-- ══ EDIT PANEL ══════════════════════════════════════════ -->
+<div class="edit-panel" id="editPanel">
+  <a href="../../index.html" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    All templates
+  </a>
+  <h1>WhatsApp Chat</h1>
+
+  <div class="section-title">Chat Info</div>
+  <div class="field-row">
+    <label>Group name</label>
+    <input id="f-title" class="ep-input" type="text" placeholder="e.g. Mission Team">
   </div>
-  <div class="chat-header">
-    <a href="../../index.html" onclick="history.length>1?(history.back(),event.preventDefault()):0" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;color:#c4c7cc;text-decoration:none;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-    </a>
-    <div class="group-icon">🦋</div>
-    <div class="chat-info">
-      <div class="chat-title" id="chatTitle">--</div>
-      <div class="chat-subtitle" id="chatSubtitle">--</div>
+  <div class="field-row">
+    <label>Participants / subtitle</label>
+    <input id="f-subtitle" class="ep-input" type="text" placeholder="e.g. Kamy, Tyler, Priya, you">
+  </div>
+  <div class="row-2col field-row">
+    <div>
+      <label style="font-size:12px;color:#8696a0;display:block;margin-bottom:4px;">Status bar time</label>
+      <input id="f-time" class="ep-input" type="text" placeholder="18:47" maxlength="5">
+    </div>
+    <div>
+      <label style="font-size:12px;color:#8696a0;display:block;margin-bottom:4px;">Battery %</label>
+      <input id="f-battery" class="ep-input" type="number" min="0" max="100" placeholder="80">
     </div>
   </div>
-  <div class="messages" id="messages"></div>
-  <div class="input-bar">
-    <span style="font-size: 20px; padding: 6px;">😊</span>
-    <div class="input-pill"><span style="flex: 1;">Повідомлення</span><span>📎</span><span>📷</span></div>
-    <div class="send-btn">🎤</div>
+
+  <div class="section-title">Messages</div>
+  <div class="msg-list" id="msgList"></div>
+  <div class="add-btns">
+    <button class="btn btn-green" id="btnAddMsg">+ Message</button>
+    <button class="btn btn-ghost" id="btnAddDiv">+ Day divider</button>
   </div>
-  <div class="home-indicator"><div class="home-bar"></div></div>
+
+  <div class="section-title">Share</div>
+  <div class="links-box">
+    <div class="link-row">
+      <div class="link-label">Edit Link (GM only — keep secret)</div>
+      <div class="link-input-row">
+        <input id="editLink" class="link-val" type="text" readonly>
+        <button class="copy-btn" data-target="editLink">Copy</button>
+      </div>
+    </div>
+    <div class="link-row">
+      <div class="link-label">Player Link (share with players)</div>
+      <div class="link-input-row">
+        <input id="playerLink" class="link-val" type="text" readonly>
+        <button class="copy-btn" data-target="playerLink">Copy</button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- ══ PHONE PREVIEW ═══════════════════════════════════════ -->
+<div class="device-wrapper" id="deviceWrapper">
+  <div class="device">
+    <div class="statusbar">
+      <span id="statusTime">--:--</span>
+      <span class="right">
+        <span class="signal"><i></i><i></i><i></i><i></i></span>
+        <span style="font-size:11px;">SOS</span>
+        <span class="battery"><span class="fill" id="batteryFill"></span></span>
+      </span>
+    </div>
+    <div class="chat-header">
+      <a href="../../index.html" onclick="history.length>1?(history.back(),event.preventDefault()):0"
+         style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;color:#c4c7cc;text-decoration:none;flex-shrink:0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <div class="group-icon">🦋</div>
+      <div class="chat-info">
+        <div class="chat-title" id="chatTitle">--</div>
+        <div class="chat-subtitle" id="chatSubtitle">--</div>
+      </div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="input-bar">
+      <span style="font-size:20px;padding:6px;">😊</span>
+      <div class="input-pill"><span style="flex:1;">Повідомлення</span><span>📎</span><span>📷</span></div>
+      <div class="send-btn">🎤</div>
+    </div>
+    <div class="home-indicator"><div class="home-bar"></div></div>
+  </div>
+</div>
+
 <script>
-  const params = new URLSearchParams(window.location.search);
-  const chatFile = params.get('chat') || 'chat.json';
-  
-  fetch(chatFile)
-    .then(r => r.json())
-    .then(data => {
-      const { phone, messages } = data;
-      
-      document.getElementById('time').textContent = phone.time;
-      
-      
-      document.getElementById('batteryFill').style.width = phone.battery + '%';
-      document.getElementById('chatTitle').textContent = phone.title;
-      document.getElementById('chatSubtitle').textContent = phone.subtitle;
-      
-      const messagesDiv = document.getElementById('messages');
-      let lastAuthor = null;
-      
-      messages.forEach(msg => {
-        if (msg.date) {
-          const divider = document.createElement('div');
-          divider.className = 'day-divider';
-          divider.innerHTML = `<span>${msg.date}</span>`;
-          messagesDiv.appendChild(divider);
-        } else {
-          const div = document.createElement('div');
-          div.className = 'msg' + (msg.sameAuthor && msg.author === lastAuthor ? ' same-author' : '');
-          
-          let content = `<div class="bubble">`;
-          
-          if (!msg.sameAuthor || msg.author !== lastAuthor) {
-            content += `<div class="author-name ${msg.author}">${msg.name}</div>`;
-          }
-          
-          if (msg.image) {
-            content += `<img src="${msg.image}" class="msg-image" alt="photo">`;
-          }
-          
-          if (msg.audio) {
-            content += `<div class="msg-audio"><audio controls><source src="${msg.audio}"></audio></div>`;
-          }
-          
-          if (msg.text) {
-            content += `<div class="msg-text">${msg.text}</div>`;
-          }
-          
-          content += `<div class="time">${msg.time}</div>`;
-          content += `</div>`;
-          
-          div.innerHTML = content;
-          messagesDiv.appendChild(div);
-          lastAuthor = msg.author;
-        }
-      });
-      
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    })
-    .catch(err => {
-      document.getElementById('messages').innerHTML = 
-        `<div style="color: #8696a0; text-align: center; padding: 20px;">Error loading ${chatFile}</div>`;
-      console.error(err);
+  // ── Unicode-safe base64 ────────────────────────────────
+  function encState(obj) {
+    const s = JSON.stringify(obj);
+    const bytes = new TextEncoder().encode(s);
+    let bin = '';
+    bytes.forEach(b => bin += String.fromCharCode(b));
+    return btoa(bin);
+  }
+  function decState(b64) {
+    const bin = atob(b64);
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+
+  // ── Known authors ──────────────────────────────────────
+  const AUTHORS = ['kamy','tyler','priya','jordan','maddie','hartwell','ada'];
+
+  const DEFAULT_STATE = {
+    phone: { time: '12:00', battery: 80, title: 'Group Chat', subtitle: 'Members' },
+    messages: [
+      { date: 'Today' },
+      { author: 'tyler', name: 'Tyler', text: 'Hello!', time: '12:00' }
+    ]
+  };
+
+  // ── Determine mode ─────────────────────────────────────
+  const qs = new URLSearchParams(location.search);
+  const isEdit = qs.get('edit') === '1';
+  const hashMatch = location.hash.match(/^#state=(.+)$/);
+
+  document.body.className = isEdit ? 'edit-mode' : 'view-mode';
+
+  let state;
+
+  if (hashMatch) {
+    try { state = decState(hashMatch[1]); }
+    catch(e) { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); }
+    renderChat(state);
+    if (isEdit) { populateForm(); updateLinks(); }
+  } else if (isEdit) {
+    state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    renderChat(state);
+    populateForm();
+    updateLinks();
+  } else {
+    fetch('chat.json')
+      .then(r => r.json())
+      .then(data => { state = data; renderChat(state); })
+      .catch(() => { state = JSON.parse(JSON.stringify(DEFAULT_STATE)); renderChat(state); });
+  }
+
+  // ── Render phone ───────────────────────────────────────
+  function renderChat(s) {
+    const p = s.phone || {};
+    document.getElementById('statusTime').textContent = p.time || '--:--';
+    document.getElementById('batteryFill').style.width = (p.battery ?? 80) + '%';
+    document.getElementById('chatTitle').textContent = p.title || '';
+    document.getElementById('chatSubtitle').textContent = p.subtitle || '';
+
+    const box = document.getElementById('messages');
+    box.innerHTML = '';
+    let lastAuthor = null;
+    (s.messages || []).forEach(msg => {
+      if (msg.date !== undefined) {
+        const d = document.createElement('div');
+        d.className = 'day-divider';
+        d.innerHTML = `<span>${escHtml(msg.date)}</span>`;
+        box.appendChild(d);
+        lastAuthor = null;
+      } else {
+        const isSame = msg.sameAuthor && msg.author === lastAuthor;
+        const d = document.createElement('div');
+        d.className = 'msg' + (isSame ? ' same-author' : '');
+        let h = `<div class="bubble">`;
+        if (!isSame) h += `<div class="author-name ${escAttr(msg.author || '')}">${escHtml(msg.name || '')}</div>`;
+        if (msg.image) h += `<img src="${escAttr(msg.image)}" class="msg-img" alt="photo">`;
+        if (msg.audio) h += `<div style="margin:6px 0"><audio controls style="width:100%;height:32px"><source src="${escAttr(msg.audio)}"></audio></div>`;
+        if (msg.text) h += `<div class="msg-text">${escHtml(msg.text)}</div>`;
+        h += `<div class="time">${escHtml(msg.time || '')}</div></div>`;
+        d.innerHTML = h;
+        box.appendChild(d);
+        lastAuthor = msg.author;
+      }
     });
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // ── Collect state from form ────────────────────────────
+  function collectState() {
+    state.phone = {
+      time: document.getElementById('f-time').value.trim(),
+      battery: parseInt(document.getElementById('f-battery').value) || 0,
+      title: document.getElementById('f-title').value,
+      subtitle: document.getElementById('f-subtitle').value,
+    };
+    state.messages = Array.from(document.querySelectorAll('.mi')).map(mi => {
+      if (mi.dataset.type === 'divider') {
+        return { date: mi.querySelector('.div-date').value };
+      }
+      const msg = {
+        author: mi.querySelector('.mi-author').value,
+        name: mi.querySelector('.mi-name').value,
+        text: mi.querySelector('.mi-text').value,
+        time: mi.querySelector('.mi-time').value,
+      };
+      if (mi.querySelector('.mi-same').checked) msg.sameAuthor = true;
+      return msg;
+    });
+  }
+
+  function updateUrl() {
+    history.replaceState(null, '', '?edit=1#state=' + encState(state));
+  }
+
+  function updateLinks() {
+    const base = location.origin + location.pathname;
+    const encoded = encState(state);
+    document.getElementById('editLink').value = base + '?edit=1#state=' + encoded;
+    document.getElementById('playerLink').value = base + '#state=' + encoded;
+  }
+
+  function onChange() {
+    collectState();
+    renderChat(state);
+    updateUrl();
+    updateLinks();
+  }
+
+  // ── Populate edit form ─────────────────────────────────
+  function populateForm() {
+    const p = state.phone || {};
+    document.getElementById('f-title').value = p.title || '';
+    document.getElementById('f-subtitle').value = p.subtitle || '';
+    document.getElementById('f-time').value = p.time || '';
+    document.getElementById('f-battery').value = p.battery ?? 80;
+
+    ['f-title','f-subtitle','f-time','f-battery'].forEach(id =>
+      document.getElementById(id).addEventListener('input', onChange));
+
+    document.getElementById('btnAddMsg').addEventListener('click', () => {
+      document.getElementById('msgList').appendChild(makeMsgItem({ author: 'tyler', name: 'Tyler', text: '', time: '12:00' }));
+      onChange();
+    });
+    document.getElementById('btnAddDiv').addEventListener('click', () => {
+      document.getElementById('msgList').appendChild(makeMsgItem({ date: '' }));
+      onChange();
+    });
+
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = document.getElementById(btn.dataset.target).value;
+        navigator.clipboard.writeText(val).catch(() => {});
+        btn.textContent = 'Copied!';
+        btn.classList.add('ok');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+      });
+    });
+
+    const list = document.getElementById('msgList');
+    list.innerHTML = '';
+    (state.messages || []).forEach(msg => list.appendChild(makeMsgItem(msg)));
+  }
+
+  function makeMsgItem(msg) {
+    const mi = document.createElement('div');
+    mi.className = 'mi';
+    if (msg.date !== undefined) {
+      mi.dataset.type = 'divider';
+      mi.innerHTML = `
+        <div class="mi-header"><span class="mi-badge is-divider">Day Divider</span></div>
+        <div class="mi-fields">
+          <div class="fi span2">
+            <label>Date text</label>
+            <input type="text" class="mi-input div-date" value="${escAttr(msg.date || '')}" placeholder="e.g. 11 October, Wednesday">
+          </div>
+        </div>
+        <button class="mi-del" title="Delete">✕</button>`;
+      mi.querySelector('.div-date').addEventListener('input', onChange);
+    } else {
+      mi.dataset.type = 'message';
+      const authorOpts = AUTHORS.map(a =>
+        `<option value="${a}"${msg.author === a ? ' selected' : ''}>${a}</option>`
+      ).join('');
+      const customSel = !AUTHORS.includes(msg.author || '') ? ' selected' : '';
+      mi.innerHTML = `
+        <div class="mi-header"><span class="mi-badge">Message</span></div>
+        <div class="mi-fields">
+          <div class="fi">
+            <label>Author ID (colour)</label>
+            <select class="mi-input mi-author">
+              ${authorOpts}
+              <option value="${escAttr(msg.author || 'custom')}"${customSel && !AUTHORS.includes(msg.author || '') ? ' selected' : ''}>${AUTHORS.includes(msg.author || '') ? 'custom…' : escHtml(msg.author || 'custom')}</option>
+            </select>
+          </div>
+          <div class="fi">
+            <label>Display name</label>
+            <input type="text" class="mi-input mi-name" value="${escAttr(msg.name || '')}" placeholder="e.g. Tyler">
+          </div>
+          <div class="fi">
+            <label>Time</label>
+            <input type="text" class="mi-input mi-time" value="${escAttr(msg.time || '')}" placeholder="18:47" maxlength="8">
+          </div>
+          <div class="fi" style="display:flex;align-items:flex-end;">
+            <label class="mi-check-row" style="margin:0;padding-bottom:4px;">
+              <input type="checkbox" class="mi-same"${msg.sameAuthor ? ' checked' : ''}>
+              Same author (hide name)
+            </label>
+          </div>
+          <div class="fi span2">
+            <label>Message text</label>
+            <textarea class="mi-input mi-textarea mi-text" placeholder="Message text…">${escHtml(msg.text || '')}</textarea>
+          </div>
+        </div>
+        <button class="mi-del" title="Delete">✕</button>`;
+      mi.querySelectorAll('.mi-input, .mi-same').forEach(el => el.addEventListener('input', onChange));
+      mi.querySelector('.mi-same').addEventListener('change', onChange);
+    }
+    mi.querySelector('.mi-del').addEventListener('click', () => { mi.remove(); onChange(); });
+    return mi;
+  }
+
+  // ── Helpers ────────────────────────────────────────────
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function escAttr(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
 </script>
 </body>
 </html>
