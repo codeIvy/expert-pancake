@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netrunner Handout Generator</title>
+<style>
+  :root {
+    --bg: #0a0f14;
+    --surface: #111820;
+    --border: #2a3540;
+    --text: #e9edef;
+    --muted: #8696a0;
+    --accent: #00a884;
+    --accent-hover: #00c29b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    min-height: 100%; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; }
+
+  header {
+    padding: 40px 32px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  header p { color: var(--muted); font-size: 14px; }
+  header .back { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: 13px; margin-bottom: 16px; }
+  header .back:hover { color: var(--text); }
+
+  main { flex: 1; padding: 32px; max-width: 800px; }
+  main h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 16px; }
+
+  .template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+
+  .template-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 24px 20px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+    text-align: center;
+  }
+  .template-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .template-card.available { cursor: pointer; }
+  .template-card.soon { opacity: 0.45; cursor: default; }
+  .template-card.soon:hover { border-color: var(--border); box-shadow: none; }
+
+  .tc-icon { font-size: 36px; margin-bottom: 12px; }
+  .tc-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .tc-desc { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .tc-badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px; background: #1f2c33; color: var(--muted);
+  }
+  .tc-badge.active { background: var(--accent); color: #fff; }
+
+  footer { padding: 24px 32px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="../index.html" class="back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    Home
+  </a>
+  <h1>Netrunner Handout Generator</h1>
+  <p>Pick a device template and get shareable Edit + Player Links for your table.</p>
+</header>
+
+<main>
+  <h2>Choose a template</h2>
+  <div class="template-grid">
+
+    <div class="template-card available" id="card-whatsapp">
+      <div class="tc-icon">💬</div>
+      <div class="tc-name">WhatsApp Chat</div>
+      <div class="tc-desc">Android group chat with custom messages and contacts</div>
+      <span class="tc-badge active">Available</span>
+    </div>
+
+    <div class="template-card soon">
+      <div class="tc-icon">📧</div>
+      <div class="tc-name">Email Client</div>
+      <div class="tc-desc">Corporate email inbox with threaded messages</div>
+      <span class="tc-badge">Coming soon</span>
+    </div>
+
+    <div class="template-card soon">
+      <div class="tc-icon">📱</div>
+      <div class="tc-name">Palm OS Launcher</div>
+      <div class="tc-desc">Retro handheld device home screen</div>
+      <span class="tc-badge">Coming soon</span>
+    </div>
+
+    <div class="template-card soon">
+      <div class="tc-icon">📋</div>
+      <div class="tc-name">WH40K Dataslate</div>
+      <div class="tc-desc">Imperial dataslate with classified intel</div>
+      <span class="tc-badge">Coming soon</span>
+    </div>
+
+  </div>
+</main>
+
+<footer>Phase 1 MVP — URL-encoded, no backend required.</footer>
+
+<script>
+  function encState(obj) {
+    const bytes = new TextEncoder().encode(JSON.stringify(obj));
+    let bin = '';
+    bytes.forEach(b => bin += String.fromCharCode(b));
+    return btoa(bin);
+  }
+
+  const WHATSAPP_DEFAULT = {
+    phone: { time: '12:00', battery: 80, title: 'Group Chat', subtitle: 'Members' },
+    messages: [
+      { date: 'Today' },
+      { author: 'tyler', name: 'Tyler', text: 'Hello!', time: '12:00' }
+    ]
+  };
+
+  document.getElementById('card-whatsapp').addEventListener('click', () => {
+    const encoded = encState(WHATSAPP_DEFAULT);
+    window.location.href = '../templates/android-phone-whatsapp/index.html?edit=1#state=' + encoded;
+  });
+</script>
+</body>
+</html>
