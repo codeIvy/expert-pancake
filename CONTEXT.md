@@ -25,5 +25,8 @@ The locked-screen + breach-animation wrapper used by some Device Templates in th
 _Avoid_: Hacking minigame, lock screen (as a feature name)
 
 **Standalone Export**:
-A downloadable, self-contained copy of a Device Instance's current content that a GM can save offline or embed in campaign documents, independent of the live Edit Link / Player Link. Mechanics (file format, snapshot behavior) still being decided.
+A downloadable, self-contained copy of a Device Instance's current content that a GM can save offline or embed in campaign documents, independent of the live Edit Link / Player Link. **Not implemented in Phase 1 (URL-encoding MVP)** — deferred to the Cloudflare Workers + Durable Objects phase (see ADR 0004).
 _Avoid_: Download, backup
+
+**Edit/Player Link distinction (Phase 1)**:
+Both links encode the same base64 JSON state in the URL (`#state=<base64>`). A query flag distinguishes them: `?edit=1` opens the GM edit view; absent or `?edit=0` opens the read-only player view. No puzzle/lock-screen wrapper — Device Instances always render content directly.

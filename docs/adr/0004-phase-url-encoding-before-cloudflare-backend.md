@@ -6,4 +6,6 @@ Rather than building the Durable Objects backend first, the URL-encoding approac
 
 ## Consequences
 
-The URL-encoding phase cannot fully implement the Edit Link/Player Link separation or the 3-month expiry model as specified in ADR 0002 and ADR 0003 — those describe the target state once the backend phase lands, not the initial build.
+The URL-encoding phase cannot fully implement the 3-month expiry model or Standalone Export as specified in ADR 0002 and ADR 0003 — those describe the target state once the backend phase lands, not the initial build.
+
+Edit Link / Player Link separation is implemented in Phase 1 via a URL flag: both links encode the same base64 JSON state in the URL hash (`#state=<base64>`), and a query parameter distinguishes the two views — `?edit=1` for the GM edit view, no flag (or `?edit=0`) for the read-only player view. Possession of a URL with `?edit=1` is the only form of "ownership" in this phase, consistent with ADR 0002.
