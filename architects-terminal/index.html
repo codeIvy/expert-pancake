@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0006">
+<title>Термінал архітектора</title>
+<style>
+  /* EDIT HERE: цільова зона резонансу (0-100) */
+  :root { --target-min: 40; --target-max: 60; }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; background:#000; font-family: "Courier New", monospace; }
+  body { display:flex; align-items:center; justify-content:center; }
+  .device {
+    width:100%; height:100%; max-width:420px; max-height:900px;
+    background:#0a0006; color:#e8c8ff; position:relative; overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .glyphs {
+    position:absolute; inset:0; z-index:1; opacity:0.06; font-size:22px; line-height:1.4;
+    padding:10px; overflow:hidden; pointer-events:none; user-select:none;
+    color:#ff3399;
+  }
+  header { padding:16px; border-bottom:1px solid #401030; flex-shrink:0; position:relative; z-index:2; text-align:center; }
+  header a { color:#7a4a66; text-decoration:none; font-size:11px; float:left; }
+  header .title { font-size:14px; letter-spacing:3px; color:#ff3399; text-shadow:0 0 10px #ff3399; animation: unstable 3s infinite; }
+  @keyframes unstable { 0%,92%,100%{ opacity:1; transform:translateX(0); } 94%{ opacity:0.4; transform:translateX(2px); } 96%{ opacity:1; transform:translateX(-2px); } }
+  header .sub { font-size:10px; color:#7a4a66; margin-top:4px; }
+  main { flex:1; overflow-y:auto; padding:24px 20px; position:relative; z-index:2; }
+
+  /* --- lock: resonance slider --- */
+  #lock { display:flex; flex-direction:column; align-items:center; gap:26px; padding-top:20px; }
+  .instr { font-size:12px; color:#c99adf; text-align:center; }
+  .meter { width:100%; position:relative; padding:20px 0; }
+  .track { height:6px; background:#2a0e22; border-radius:3px; position:relative; }
+  .target-zone { position:absolute; top:0; height:100%; background:rgba(255,51,153,0.35); border-radius:3px; }
+  input[type=range] { width:100%; margin-top:10px; accent-color:#ff3399; }
+  #resVal { text-align:center; font-size:13px; color:#e8c8ff; }
+  #hint { font-size:11px; color:#7a4a66; text-align:center; max-width:280px; }
+
+  /* --- breach --- */
+  #breach { display:none; padding-top:30px; }
+  #breach .line { font-size:13px; margin:8px 0; opacity:0; animation: fadeIn 0.2s forwards; color:#ff3399; text-shadow:0 0 6px #ff3399; }
+  @keyframes fadeIn { to { opacity:1; } }
+  .devicewide-flicker { animation: wideflicker 0.08s steps(1) 6; }
+  @keyframes wideflicker { 50% { filter: invert(1); } }
+
+  /* --- content --- */
+  #content { display:none; }
+  #content h2 { font-size:15px; color:#ff3399; text-shadow:0 0 8px #ff3399; margin-bottom:14px; }
+  .entry { font-size:13px; line-height:1.7; margin-bottom:18px; padding-left:12px; border-left:2px solid #401030; }
+  .entry .date { font-size:10px; color:#7a4a66; display:block; margin-bottom:4px; }
+  .corrupt { color:#ff3399; text-shadow:0 0 6px #ff3399; animation: corruptFlicker 2s infinite; }
+  @keyframes corruptFlicker { 0%,85%,100%{ opacity:1; } 87%{ opacity:0.3; } 89%{ opacity:1; } }
+</style>
+</head>
+<body>
+<div class="device" id="deviceEl">
+  <div class="glyphs" id="glyphs"></div>
+  <header>
+    <a href="../index.html">← вихід</a>
+    <div class="title">仝 АРХІТЕКТОР 仝</div>
+    <div class="sub">Поверх 0 · вузол не в реєстрі</div>
+  </header>
+  <main>
+    <div id="lock">
+      <div class="instr">СИНХРОНІЗУЙ ЧАСТОТУ ЗІ СЛІДОМ ПРИСУТНОСТІ</div>
+      <div class="meter">
+        <div class="track"><div class="target-zone" id="zone"></div></div>
+        <input type="range" min="0" max="100" value="0" id="slider">
+      </div>
+      <div id="resVal">Резонанс: 0%</div>
+      <div id="hint">GM: підкажи гравцям приблизну зону після вдалої перевірки на Емпатію/Взлом.</div>
+    </div>
+
+    <div id="breach"></div>
+
+    <div id="content">
+      <h2>ОСТАННІЙ ЗАПИС</h2>
+      <!-- EDIT HERE: фінальний лор -->
+      <div class="entry">
+        <span class="date">40 років до затоплення поверху 66</span>
+        Вони забрали в мене «Веретено» за тиждень до відкриття. Моє ім'я стерли з
+        меморіальної таблички. Мій рахунок закрили. Мій пропуск — анулювали.
+      </div>
+      <div class="entry">
+        <span class="date">Останній вхід у систему</span>
+        Будівля пам'ятає мене, навіть якщо реєстр — ні. Я — <span class="corrupt">в кожному кабелі</span>,
+        <span class="corrupt">в кожному ліфті</span>, <span class="corrupt">в кожній камері</span>.
+        Мережа — це я.
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // decorative background glyphs
+  const glyphChars = "仝 ⛧ 𐤟 ⚿ ⌬ ᚼ ⟁ 𓂀 ";
+  document.getElementById('glyphs').textContent = glyphChars.repeat(40);
+
+  const TARGET_MIN = 40, TARGET_MAX = 60; // EDIT: цільова зона
+  const zone = document.getElementById('zone');
+  zone.style.left = TARGET_MIN + '%';
+  zone.style.width = (TARGET_MAX - TARGET_MIN) + '%';
+
+  const slider = document.getElementById('slider');
+  const resVal = document.getElementById('resVal');
+  let locked = false;
+
+  slider.addEventListener('input', () => {
+    const v = Number(slider.value);
+    resVal.textContent = 'Резонанс: ' + v + '%';
+    if (!locked && v >= TARGET_MIN && v <= TARGET_MAX) {
+      locked = true;
+      setTimeout(breach, 500);
+    }
+  });
+
+  function breach() {
+    document.getElementById('lock').style.display = 'none';
+    const device = document.getElementById('deviceEl');
+    device.classList.add('devicewide-flicker');
+    const b = document.getElementById('breach');
+    b.style.display = 'block';
+    const lines = [
+      "резонанс вирівняно...",
+      "СЛІД ПРИСУТНОСТІ ЗАФІКСОВАНО",
+      "хтось вже давно чекав на це з'єднання...",
+      "ДОСТУП ВІДКРИТО"
+    ];
+    lines.forEach((l,i) => {
+      setTimeout(()=>{
+        const d = document.createElement('div');
+        d.className = 'line';
+        d.textContent = '> ' + l;
+        b.appendChild(d);
+      }, 300 + i*600);
+    });
+    setTimeout(showContent, 300 + lines.length*600 + 400);
+  }
+
+  function showContent() {
+    document.getElementById('breach').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  }
+</script>
+</body>
+</html>

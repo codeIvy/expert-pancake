@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<title>Відеоспостереження</title>
+<style>
+  /* EDIT HERE: яка камера показує аномалію */
+  :root { --anomaly-cam: "CAM-04"; }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; background:#000; font-family: "Courier New", monospace; }
+  body { display:flex; align-items:center; justify-content:center; }
+  .device {
+    width:100%; height:100%; max-width:420px; max-height:900px;
+    background:#0a0a0a; color:#ddd; position:relative; overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .grain {
+    position:absolute; inset:0; pointer-events:none; z-index:6; opacity:0.15;
+    background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+    background-size: 3px 3px;
+    animation: grain 0.2s steps(2) infinite;
+  }
+  @keyframes grain { 50% { transform: translate(1px,-1px); } }
+  .scan {
+    position:absolute; inset:0; pointer-events:none; z-index:5;
+    background: repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.35) 3px);
+  }
+  header { padding:14px 16px; border-bottom:1px solid #333; flex-shrink:0; display:flex; justify-content:space-between; align-items:center; }
+  header a { color:#888; text-decoration:none; font-size:11px; }
+  .rec { display:flex; align-items:center; gap:6px; font-size:11px; color:#ff3333; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#ff3333; animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity:0.1; } }
+  main { flex:1; overflow-y:auto; padding:16px; position:relative; z-index:2; }
+
+  /* --- lock / grid selection --- */
+  #lock .instr { font-size:12px; color:#aaa; margin-bottom:14px; text-align:center; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .cam {
+    position:relative; aspect-ratio:4/3; background:#111; border:1px solid #333;
+    display:flex; align-items:center; justify-content:center; font-size:34px;
+    cursor:pointer; overflow:hidden;
+  }
+  .cam .label { position:absolute; top:4px; left:6px; font-size:10px; color:#999; }
+  .cam.shake { animation: shake 0.3s; border-color:#ff3333; }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+  #hint { font-size:11px; opacity:0.5; text-align:center; margin-top:16px; }
+
+  /* --- breach --- */
+  #breach { display:none; padding-top:40px; }
+  #breach .line { font-size:12px; margin:6px 0; opacity:0; animation: fadeIn 0.2s forwards; color:#ff6666; }
+  @keyframes fadeIn { to { opacity:1; } }
+  .staticflash { position:fixed; inset:0; background:#fff; opacity:0; z-index:10; pointer-events:none; }
+  .staticflash.on { animation: flash 0.15s; }
+  @keyframes flash { 0%{opacity:0.8;} 100%{opacity:0;} }
+
+  /* --- content --- */
+  #content { display:none; }
+  .feed { background:#111; border:1px solid #333; aspect-ratio:4/3; position:relative; display:flex; align-items:center; justify-content:center; font-size:60px; margin-bottom:14px; }
+  .feed .ts { position:absolute; bottom:6px; right:8px; font-size:10px; color:#999; }
+  .feed .glitchtext { position:absolute; color:#ff3333; font-size:13px; text-align:center; padding:0 10px;
+    animation: gflicker 2.4s infinite; text-shadow:0 0 8px #ff3333; }
+  @keyframes gflicker { 0%,88%,100%{ opacity:0; } 90%{ opacity:1; } 93%{ opacity:0; } 95%{ opacity:1; } }
+  .note { font-size:12px; line-height:1.6; color:#ccc; }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="grain"></div>
+  <div class="scan"></div>
+  <header>
+    <a href="../index.html">← вихід</a>
+    <div class="rec"><div class="dot"></div>REC</div>
+  </header>
+  <main>
+    <div id="lock">
+      <div class="instr">ОБЕРІТЬ КАМЕРУ З АНОМАЛІЄЮ У КАДРІ</div>
+      <div class="grid" id="grid"></div>
+      <div id="hint">GM: підкажи гравцям, яка камера, після вдалої перевірки на Уважність/Взлом.</div>
+    </div>
+
+    <div id="breach"></div>
+
+    <div id="content">
+      <div class="feed">
+        <span>🏢</span>
+        <div class="glitchtext">ТИ БАЧИШ ЦЕ?</div>
+        <div class="ts" id="ts"></div>
+      </div>
+      <!-- EDIT HERE: опис того, що камера зафіксувала -->
+      <div class="note">CAM-04 · Поверх 66, службовий коридор.<br><br>
+        На записі — силует у робочому комбінезоні минулого століття, що стоїть нерухомо
+        обличчям до стіни. Часова мітка запису на 40 років старіша за дату встановлення камери.</div>
+    </div>
+  </main>
+</div>
+<div class="staticflash" id="flash"></div>
+
+<script>
+  // EDIT HERE: список камер, одна з них — з аномалією
+  const cams = [
+    { id:'CAM-01', icon:'🚪' },
+    { id:'CAM-02', icon:'🛗' },
+    { id:'CAM-03', icon:'🪟' },
+    { id:'CAM-04', icon:'🏢', anomaly:true },
+    { id:'CAM-05', icon:'🚻' },
+    { id:'CAM-06', icon:'🅿️' },
+  ];
+
+  const grid = document.getElementById('grid');
+  cams.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'cam';
+    el.innerHTML = `<span class="label">${c.id}</span><span>${c.icon}</span>`;
+    el.onclick = () => select(c, el);
+    grid.appendChild(el);
+  });
+
+  function select(c, el) {
+    if (c.anomaly) { breach(); }
+    else {
+      el.classList.add('shake');
+      flashStatic();
+      setTimeout(()=> el.classList.remove('shake'), 300);
+    }
+  }
+
+  function flashStatic() {
+    const f = document.getElementById('flash');
+    f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
+  }
+
+  function breach() {
+    document.getElementById('lock').style.display = 'none';
+    const b = document.getElementById('breach');
+    b.style.display = 'block';
+    flashStatic();
+    const lines = [
+      "синхронізація потоку CAM-04...",
+      "відновлення архівного запису...",
+      "ПОМИЛКА ЧАСОВОЇ МІТКИ",
+      "ПОТІК ВІДНОВЛЕНО"
+    ];
+    lines.forEach((l,i) => {
+      setTimeout(()=>{
+        const d = document.createElement('div');
+        d.className = 'line';
+        d.textContent = '> ' + l;
+        b.appendChild(d);
+        if (i === 2) flashStatic();
+      }, 300 + i*550);
+    });
+    setTimeout(showContent, 300 + lines.length*550 + 300);
+  }
+
+  function showContent() {
+    document.getElementById('breach').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    document.getElementById('ts').textContent = new Date().toISOString().slice(0,19).replace('T',' ');
+  }
+</script>
+</body>
+</html>
